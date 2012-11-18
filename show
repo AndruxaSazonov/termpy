@@ -1,0 +1,83 @@
+#!/usr/bin/python
+
+import sys, os
+
+pipe_name = None
+
+def remove_pipe():
+  try: 
+    os.unlink(pipe_name)
+  except:
+    return False
+  return True
+
+def process_file(file_name):
+  if not pipe_name:
+    return
+  try:
+    fd = open(file_name, "r")
+  except:
+    remove_pipe()
+    print >> sys.stderr, ("show: problem opening file: " + file_name)
+    return
+  if not fd:
+    remove_pipe()
+    return
+  try:
+     pipe = open(pipe_name, "wb")
+  except:
+     remove_pipe()
+     return
+  line = fd.read()
+  while len(line):
+        os.unlink(pipe_name)
+        print >> pipe, line
+        line = fd.read()
+  print >> pipe, line
+  pipe.flush()
+  fd.close()
+  if not pipe.closed: pipe.close()
+
+def process_stdin():
+  if not pipe_name:
+     return
+  if sys.stdin.isatty():
+    remove_pipe()
+    print >> sys.stderr, 'show: terminal input is not supported'
+    return
+  try:
+     pipe = open(pipe_name, "wb")
+  except:
+     remove_pipe()
+     return
+  print >> pipe, sys.stdin.read()
+  pipe.flush()
+  if not pipe.closed: pipe.close()
+
+def main():
+   argv = sys.argv
+   if len(argv) == 1:
+      try_pipe = True
+   else:
+      try_pipe = False
+   parentpid = os.getppid()
+   if parentpid < 0:
+     return
+   global pipe_name 
+   pipe_name = "/tmp/pipe_show_%s" % str(parentpid)
+   if os.path.exists(pipe_name):
+     if not remove_pipe():
+       print >> sys.stderr, "show: pipe " + pipe_name + " cannot be not removed" 
+       return
+   if not os.path.exists(pipe_name):
+      try:
+        os.mkfifo(pipe_name)
+      except:
+        print >> sys.stderr, "show: cannot create pipe"
+      if not try_pipe:
+        process_file(argv[1])
+      else:
+        process_stdin()
+
+if __name__=='__main__':
+  main()
