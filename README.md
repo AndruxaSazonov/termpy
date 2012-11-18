@@ -20,3 +20,7 @@ If 'show' hangs up - click Enter key once. This is known bug, sorry. Not yet fix
 
 With best regards,
 Sazonov Andrey
+
+Screenshots:
+![Screenshot 1](https://github.com/downloads/AndruxaSazonov/termpy/Screenshot2.png)
+![Screenshot 2](https://github.com/downloads/AndruxaSazonov/termpy/Screenshot1.png)
