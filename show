@@ -30,7 +30,6 @@ def process_file(file_name):
      return
   line = fd.read()
   while len(line):
-        os.unlink(pipe_name)
         print >> pipe, line
         line = fd.read()
   print >> pipe, line
