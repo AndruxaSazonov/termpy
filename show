@@ -1,8 +1,9 @@
 #!/usr/bin/python
 
-import sys, os
+import sys, os, signal
 
 pipe_name = None
+grandparent = None
 
 def remove_pipe():
   try: 
@@ -12,43 +13,49 @@ def remove_pipe():
   return True
 
 def process_file(file_name):
-  if not pipe_name:
-    return
+  if pipe_name is None:
+    raise Exception()
+  if grandparent is None:
+     raise Exception()
   try:
     fd = open(file_name, "r")
   except:
     remove_pipe()
     print >> sys.stderr, ("show: problem opening file: " + file_name)
-    return
+    raise Exception()
   if not fd:
     remove_pipe()
-    return
+    raise Exception()
   try:
+     os.kill(grandparent, signal.SIGUSR1)
      pipe = open(pipe_name, "wb")
   except:
      remove_pipe()
-     return
+     raise Exception()
   line = fd.read()
   while len(line):
         print >> pipe, line
         line = fd.read()
   print >> pipe, line
-  pipe.flush()
   fd.close()
+  pipe.flush()
   if not pipe.closed: pipe.close()
 
 def process_stdin():
-  if not pipe_name:
-     return
+  if pipe_name is None:
+     raise Exception()
+  if grandparent is None:
+     raise Exception()
   if sys.stdin.isatty():
     remove_pipe()
     print >> sys.stderr, 'show: terminal input is not supported'
-    return
+    raise Exception()
   try:
+     os.kill(grandparent, signal.SIGUSR1)
      pipe = open(pipe_name, "wb")
   except:
      remove_pipe()
-     return
+     raise Exception()
   print >> pipe, sys.stdin.read()
   pipe.flush()
   if not pipe.closed: pipe.close()
@@ -68,16 +75,28 @@ def main():
      if not remove_pipe():
        print >> sys.stderr, ("show: pipe " + pipe_name + " cannot be not removed") 
        return
+   termpy_file = "/tmp/show_gppid_%s"  % (parentpid)
+   global grandparent
+   try:
+     with open(termpy_file, "r") as f:
+        grandparent = int(f.readline())
+   except:
+      print >> sys.stderr, ("show: lock file problem: " + termpy_file)
+      return 
    if not os.path.exists(pipe_name):
       try:
         os.mkfifo(pipe_name)
       except:
         print >> sys.stderr, "show: cannot create pipe"
         return
-      if not try_pipe:
-        process_file(argv[1])
-      else:
-        process_stdin()
+      try:
+        if not try_pipe:
+          process_file(argv[1])
+        else:
+          process_stdin()
+      except:
+        print >> sys.stderr, "show: problem occured while transferring file"
+        return
 
 if __name__=='__main__':
   main()
