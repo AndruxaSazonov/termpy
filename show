@@ -66,13 +66,14 @@ def main():
    pipe_name = "/tmp/pipe_show_%s" % str(parentpid)
    if os.path.exists(pipe_name):
      if not remove_pipe():
-       print >> sys.stderr, "show: pipe " + pipe_name + " cannot be not removed" 
+       print >> sys.stderr, ("show: pipe " + pipe_name + " cannot be not removed") 
        return
    if not os.path.exists(pipe_name):
       try:
         os.mkfifo(pipe_name)
       except:
         print >> sys.stderr, "show: cannot create pipe"
+        return
       if not try_pipe:
         process_file(argv[1])
       else:
