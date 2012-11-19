@@ -41,7 +41,7 @@ class MainWindow(gtk.Window):
         self.pixbuf = None
         if event.keyval == 65293: # enter key
              if not os.path.exists(self.pipe_name):
-                return
+                return False
              try:
                pipe = open(self.pipe_name, "rb")
              except:
@@ -81,9 +81,9 @@ class MainWindow(gtk.Window):
         if image_width > width:
            image_height = int(image_height * width / image_width)
            image_width  = width
-        if image_height > (height - self.vte.get_char_height()):
-           image_width  = int(image_width * height / (image_height - self.vte.get_char_height()))
-           image_height = height - self.vte.get_char_height() - 8 # for better fitness :)
+        if image_height > (height - self.vte.get_char_height() - 8):  # 8 is for better fitness...
+           image_width  = int(image_width * height / (image_height - self.vte.get_char_height() - 8))
+           image_height = height - self.vte.get_char_height() - 8
 
         self.pixbuf = pixbuf.scale_simple(image_width, image_height, gtk.gdk.INTERP_BILINEAR)
         self.vte.window.draw_pixbuf(self.get_style().white_gc, \
