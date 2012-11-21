@@ -3,6 +3,7 @@ import gtk
 import vte
 import os
 import signal
+import time
 
 class DrawableVTE(vte.Terminal, gtk.DrawingArea):
     def __init__(self):
@@ -27,6 +28,7 @@ class MainWindow(gtk.Window):
         self.loader = gtk.gdk.PixbufLoader()
         self.pixbuf = None
         self.last_row_added = False
+        self.text_modified = False
         column, self.last_row = self.vte.get_cursor_position()
 
     def main_quit(self, widget, window):
@@ -52,20 +54,21 @@ class MainWindow(gtk.Window):
 
     def clear(self, widget, event):
        realized = False
-       if self.pixbuf is not None:
+       if not self.pixbuf is None:
           column, row = self.vte.get_cursor_position()
-          if row > self.last_row:
+          keyname = gtk.gdk.keyval_name(event.keyval)
+          if row > self.last_row and not "Alt" in keyname: # catch the ALT-TAB, ALT-SPACE and etc.
              self.pixbuf = None
              self.vte.realize()
              realized = True
+             self.last_row = row
        if event.keyval == 65293: # enter key
           self.pixbuf = None
           if not realized: self.vte.realize()
-          self.last_row += 1
+          column, self.last_row = self.vte.get_cursor_position()
        return False
 
     def preprocess_show(self):
-        self.pixbuf = None
         if not os.path.exists(self.pipe_name):
            return False
         try:
@@ -86,31 +89,34 @@ class MainWindow(gtk.Window):
              pass
         if not pipe.closed: pipe.close()
         self.remove_pipe()
-        if do: self.do_show()
+        if do:
+           self.do_show()
         self.loader = gtk.gdk.PixbufLoader()
         return True
 
     def do_show(self):
-        x, y, width, height = self.vte.get_allocation()
-        column, row = self.vte.get_cursor_position()
-
-        spaces_number =  self.vte.get_column_count() - column 
-        spaces_number += self.vte.get_column_count()*self.vte.get_row_count() 
-        spaces = "".join([" " for x in xrange(0, spaces_number)])
         try:
            pixbuf = self.loader.get_pixbuf()
         except:
            return False
-        self.vte.feed(spaces)
-        image_width, image_height = pixbuf.get_width(), pixbuf.get_height()
 
+        x, y, width, height = self.vte.get_allocation()
+        column, row = self.vte.get_cursor_position()
+        spaces_number  = self.vte.get_column_count() - column
+        spaces_number += self.vte.get_column_count() * (self.vte.get_row_count() - 1) 
+        spaces = "".join([" " for x in xrange(0, spaces_number)])
+        self.vte.feed(spaces)
+        column, self.last_row = self.vte.get_cursor_position()
+
+        image_width, image_height = pixbuf.get_width(), pixbuf.get_height()
         if image_width > width:
            image_height = int(image_height * width / image_width)
            image_width  = width
-        if image_height > (height - self.vte.get_char_height() - 8):  # 8 is for better fitness...
-           image_width  = int(image_width * height / (image_height - self.vte.get_char_height() - 8))
-           image_height = height - self.vte.get_char_height() - 8
+        if image_height > (height - self.vte.get_char_height() - 10):  # 10 is for better fitness...
+           image_width  = int(image_width * (height - self.vte.get_char_height() - 10) / image_height)
+           image_height = height - self.vte.get_char_height() - 10
 
+        self.pixbuf = None
         self.pixbuf = pixbuf.scale_simple(image_width, image_height, gtk.gdk.INTERP_BILINEAR)
         self.vte.window.draw_pixbuf(self.get_style().white_gc, \
                                     self.pixbuf, \
