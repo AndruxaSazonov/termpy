@@ -48,14 +48,14 @@ class MainWindow(gtk.Window):
        realized = False
        if not self.pixbuf is None:
           column, row = self.vte.get_cursor_position()
-          if (column == self.vte.get_column_count() - 1) or \
-             (row % self.vte.get_row_count() < self.vte.get_row_count() - 1):
+          keyname = gtk.gdk.keyval_name(event.keyval)
+          if (column == self.vte.get_column_count() - 1) or ("Control_L" == keyname):
              self.pixbuf = None
-             self.vte.realize(), self.realize()
+             self.vte.realize()
              realized = True
        if event.keyval == 65293: # enter key
           self.pixbuf = None
-          if not realized: self.vte.realize(), self.realize()
+          if not realized: self.vte.realize()
        return False
 
     def preprocess_show(self):
