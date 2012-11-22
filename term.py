@@ -5,16 +5,11 @@ import os
 import signal
 import time
 
-class DrawableVTE(vte.Terminal, gtk.DrawingArea):
-    def __init__(self):
-        vte.Terminal.__init__(self)
-        gtk.DrawingArea.__init__(self)
-
 class MainWindow(gtk.Window):
     def __init__(self):
         gtk.Window.__init__(self)
         self.connect("delete-event", self.main_quit)
-        self.vte = DrawableVTE()
+        self.vte = vte.Terminal()
         self.vte.connect("child-exited", self.command_executed)
         self.vte.connect("eof", self.command_executed)
         self.connect("key-press-event", self.clear)
@@ -27,9 +22,6 @@ class MainWindow(gtk.Window):
              f.write(str(os.getpid()))
         self.loader = gtk.gdk.PixbufLoader()
         self.pixbuf = None
-        self.last_row_added = False
-        self.text_modified = False
-        column, self.last_row = self.vte.get_cursor_position()
 
     def main_quit(self, widget, window):
        try:
@@ -56,16 +48,14 @@ class MainWindow(gtk.Window):
        realized = False
        if not self.pixbuf is None:
           column, row = self.vte.get_cursor_position()
-          keyname = gtk.gdk.keyval_name(event.keyval)
-          if row > self.last_row and not "Alt" in keyname: # catch the ALT-TAB, ALT-SPACE and etc.
+          if (column == self.vte.get_column_count() - 1) or \
+             (row % self.vte.get_row_count() < self.vte.get_row_count() - 1):
              self.pixbuf = None
-             self.vte.realize()
+             self.vte.realize(), self.realize()
              realized = True
-             self.last_row = row
        if event.keyval == 65293: # enter key
           self.pixbuf = None
-          if not realized: self.vte.realize()
-          column, self.last_row = self.vte.get_cursor_position()
+          if not realized: self.vte.realize(), self.realize()
        return False
 
     def preprocess_show(self):
@@ -106,7 +96,6 @@ class MainWindow(gtk.Window):
         spaces_number += self.vte.get_column_count() * (self.vte.get_row_count() - 1) 
         spaces = "".join([" " for x in xrange(0, spaces_number)])
         self.vte.feed(spaces)
-        column, self.last_row = self.vte.get_cursor_position()
 
         image_width, image_height = pixbuf.get_width(), pixbuf.get_height()
         if image_width > width:
