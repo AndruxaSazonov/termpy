@@ -91,11 +91,8 @@ class MainWindow(gtk.Window):
            return False
 
         x, y, width, height = self.vte.get_allocation()
-        column, row = self.vte.get_cursor_position()
-        spaces_number  = self.vte.get_column_count() - column
-        spaces_number += self.vte.get_column_count() * (self.vte.get_row_count() - 1) 
-        spaces = "".join([" " for x in xrange(0, spaces_number)])
-        self.vte.feed(spaces)
+        lines = "".join(["\n" for x in xrange(0, self.vte.get_row_count() - 1)])
+        self.vte.feed(lines)
 
         image_width, image_height = pixbuf.get_width(), pixbuf.get_height()
         if image_width > width:
