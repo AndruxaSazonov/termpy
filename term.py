@@ -45,17 +45,17 @@ class MainWindow(gtk.Window):
         pass
 
     def clear(self, widget, event):
-       realized = False
+       keyname = gtk.gdk.keyval_name(event.keyval)
        if not self.pixbuf is None:
           column, row = self.vte.get_cursor_position()
-          keyname = gtk.gdk.keyval_name(event.keyval)
           if (column == self.vte.get_column_count() - 1) or ("Control_L" == keyname):
              self.pixbuf = None
              self.vte.realize()
              realized = True
-       if event.keyval == 65293: # enter key
-          self.pixbuf = None
-          if not realized: self.vte.realize()
+       if "Return" == keyname:
+          if not self.pixbuf is None:
+	     self.pixbuf = None
+             self.vte.realize()
        return False
 
     def preprocess_show(self):
