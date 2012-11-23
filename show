@@ -65,9 +65,9 @@ def main():
    else:
       try_pipe = False
    parentpid = os.getppid()
-   if parentpid < 0:
+   if parentpid < 1:
      return
-   global pipe_name 
+   global pipe_name
    pipe_name = "/tmp/pipe_show_%s" % str(parentpid)
    if os.path.exists(pipe_name):
      if not remove_pipe():
@@ -80,7 +80,7 @@ def main():
         grandparent = int(f.readline())
    except:
       print >> sys.stderr, ("show: lock file problem: " + termpy_file)
-      return 
+      return
    if not os.path.exists(pipe_name):
       try:
         os.mkfifo(pipe_name)
