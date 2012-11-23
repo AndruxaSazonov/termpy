@@ -18,7 +18,7 @@ def process_file(file_name):
   if grandparent is None:
      raise Exception()
   try:
-    fd = open(file_name, "r")
+    fd = open(file_name, "rb")
   except:
     remove_pipe()
     print >> sys.stderr, ("show: problem opening file: " + file_name)

@@ -72,8 +72,7 @@ class MainWindow(gtk.Window):
            self.loader.write(line)
         do = False
         try:
-            self.loader.close()
-            do = True
+            do = self.loader.close()
         except:
              pass
         if not pipe.closed: pipe.close()
@@ -101,12 +100,11 @@ class MainWindow(gtk.Window):
            image_width  = int(image_width * (height - self.vte.get_char_height() - 10) / image_height)
            image_height = height - self.vte.get_char_height() - 10
 
-        self.pixbuf = None
         self.pixbuf = pixbuf.scale_simple(image_width, image_height, gtk.gdk.INTERP_BILINEAR)
         self.vte.window.draw_pixbuf(self.get_style().white_gc, \
                                     self.pixbuf, \
                                     0, 0, 0, 0, image_width, image_height)
-        return False
+        return True
 
     def do_paint(self, widget, window):
        if self.pixbuf is not None:
