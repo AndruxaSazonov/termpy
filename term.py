@@ -9,6 +9,7 @@ class MainWindow(gtk.Window):
         gtk.Window.__init__(self)
         self.connect("delete-event", self.main_quit)
         self.vte = vte.Terminal()
+        self.set_position(gtk.WIN_POS_CENTER)
         self.vte.connect("child-exited", self.command_executed)
         self.vte.connect("eof", self.command_executed)
         self.connect("key-press-event", self.clear)

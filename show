@@ -21,7 +21,7 @@ def process_file(file_name):
     fd = open(file_name, "rb")
   except:
     remove_pipe()
-    raise Exception('show: problem while opening file' + file_name)
+    raise Exception('show: problem while opening file: ' + file_name)
   if not fd:
     remove_pipe()
     raise Exception('show: problem with file descriptor')
@@ -65,8 +65,6 @@ def main():
    else:
       try_pipe = False
    parentpid = os.getppid()
-   if parentpid < 1:
-     return
    global pipe_name
    pipe_name = "/tmp/pipe_show_%s" % str(parentpid)
    if os.path.exists(pipe_name):
