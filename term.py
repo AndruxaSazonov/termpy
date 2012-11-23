@@ -3,7 +3,6 @@ import gtk
 import vte
 import os
 import signal
-import time
 
 class MainWindow(gtk.Window):
     def __init__(self):
@@ -54,7 +53,7 @@ class MainWindow(gtk.Window):
              realized = True
        if "Return" == keyname:
           if not self.pixbuf is None:
-	     self.pixbuf = None
+             self.pixbuf = None
              self.vte.realize()
        return False
 
