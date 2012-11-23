@@ -32,13 +32,9 @@ def process_file(file_name):
      remove_pipe()
      raise Exception('show: problem while opening pipe')
   line = fd.read()
-  while len(line):
-        print >> pipe, line
-        line = fd.read()
   print >> pipe, line
   fd.close()
-  pipe.flush()
-  if not pipe.closed: pipe.close()
+  pipe.close()
 
 def process_stdin():
   if pipe_name is None:
@@ -55,8 +51,7 @@ def process_stdin():
      remove_pipe()
      raise Exception('show: cannot open named pipe')
   print >> pipe, sys.stdin.read()
-  pipe.flush()
-  if not pipe.closed: pipe.close()
+  pipe.close()
 
 def main():
    argv = sys.argv
