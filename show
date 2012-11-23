@@ -6,7 +6,7 @@ pipe_name = None
 grandparent = None
 
 def remove_pipe():
-  try: 
+  try:
     os.unlink(pipe_name)
   except:
     return False
@@ -14,24 +14,23 @@ def remove_pipe():
 
 def process_file(file_name):
   if pipe_name is None:
-    raise Exception()
+    raise Exception('show: no pipe name')
   if grandparent is None:
-     raise Exception()
+     raise Exception('show: granparent process not found')
   try:
     fd = open(file_name, "rb")
   except:
     remove_pipe()
-    print >> sys.stderr, ("show: problem opening file: " + file_name)
-    raise Exception()
+    raise Exception('show: problem while opening file' + file_name)
   if not fd:
     remove_pipe()
-    raise Exception()
+    raise Exception('show: problem with file descriptor')
   try:
      os.kill(grandparent, signal.SIGUSR1)
      pipe = open(pipe_name, "wb")
   except:
      remove_pipe()
-     raise Exception()
+     raise Exception('show: problem while opening pipe')
   line = fd.read()
   while len(line):
         print >> pipe, line
@@ -43,26 +42,25 @@ def process_file(file_name):
 
 def process_stdin():
   if pipe_name is None:
-     raise Exception()
+     raise Exception('show: no pipe name')
   if grandparent is None:
-     raise Exception()
+     raise Exception('show: grandparent process not found')
   if sys.stdin.isatty():
     remove_pipe()
-    print >> sys.stderr, 'show: terminal input is not supported'
-    raise Exception()
+    raise Exception('show: terminal input is not supported')
   try:
      os.kill(grandparent, signal.SIGUSR1)
      pipe = open(pipe_name, "wb")
   except:
      remove_pipe()
-     raise Exception()
+     raise Exception('show: cannot open named pipe')
   print >> pipe, sys.stdin.read()
   pipe.flush()
   if not pipe.closed: pipe.close()
 
 def main():
    argv = sys.argv
-   if len(argv) == 1:
+   if len(argv) < 2:
       try_pipe = True
    else:
       try_pipe = False
@@ -94,9 +92,8 @@ def main():
           process_file(argv[1])
         else:
           process_stdin()
-      except:
-        print >> sys.stderr, "show: problem occured while transferring file"
-        return
+      except Exception as exception:
+        print >> sys.stderr, exception
 
 if __name__=='__main__':
   main()
