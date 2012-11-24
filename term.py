@@ -16,8 +16,8 @@ class MainWindow(gtk.Window):
         self.vte.connect_after("expose-event", self.do_paint)
         self.add(self.vte)
         self.pid = self.vte.fork_command(command = 'bash')
-        self.pipe_name = "/tmp/pipe_show_%s" % str(self.pid)
-        self.initial = "/tmp/show_gppid_%s"  % str(self.pid)
+        self.pipe_name = "/tmp/pipe_show_%s"  % str(self.pid)
+        self.initial   = "/tmp/show_gppid_%s" % str(self.pid)
         with open(self.initial, "w+") as f:
              f.write(str(os.getpid()))
         self.loader = gtk.gdk.PixbufLoader()
@@ -48,7 +48,8 @@ class MainWindow(gtk.Window):
        keyname = gtk.gdk.keyval_name(event.keyval)
        if not self.pixbuf is None:
           column, row = self.vte.get_cursor_position()
-          if (column == self.vte.get_column_count() - 1) or ("Control_L" == keyname):
+          if (column == self.vte.get_column_count() - 1) \
+             or ("Control_L" == keyname) or ("Control_D" == keyname):
              self.pixbuf = None
              self.vte.realize()
              realized = True

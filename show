@@ -2,78 +2,81 @@
 
 import sys, os, signal
 
-pipe_name = None
-grandparent = None
-
-def remove_pipe():
+def remove_pipe(pipe_name):
   try:
     os.unlink(pipe_name)
   except:
-    return False
-  return True
+    pass
 
-def process_file(file_name):
+def is_iam_a_child():
+  try:
+    forked_bash_pids = [fname[11:] for fname in os.listdir('/tmp') if fname[0:10] == "show_gppid"]
+  except:
+    raise Exception('show: problem with show_gppid pid files in /tmp')
+  pid = os.getpid()
+  while pid != "1":
+    pid = os.popen("ps -p %s -oppid=" % pid).read().strip()
+    if pid in forked_bash_pids: break
+  if pid == "1":
+    raise Exception('show: no pid files or running not with term.py')
+  return pid
+
+def process_file(file_name, pipe_name, grandparent):
   if pipe_name is None:
     raise Exception('show: no pipe name')
   if grandparent is None:
-     raise Exception('show: granparent process not found')
+    raise Exception('show: granparent process not found')
   try:
     fd = open(file_name, "rb")
   except:
-    remove_pipe()
+    remove_pipe(pipe_name)
     raise Exception('show: problem while opening file: ' + file_name)
-  if not fd:
-    remove_pipe()
-    raise Exception('show: problem with file descriptor')
   try:
-     os.kill(grandparent, signal.SIGUSR1)
-     pipe = open(pipe_name, "wb")
+    os.kill(grandparent, signal.SIGUSR1)
+    pipe = open(pipe_name, "wb")
   except:
-     remove_pipe()
-     raise Exception('show: problem while opening pipe')
+    remove_pipe(pipe_name)
+    raise Exception('show: problem while opening pipe')
   line = fd.read()
   print >> pipe, line
   fd.close()
   pipe.close()
 
-def process_stdin():
+def process_stdin(pipe_name, grandparent):
   if pipe_name is None:
      raise Exception('show: no pipe name')
   if grandparent is None:
      raise Exception('show: grandparent process not found')
   if sys.stdin.isatty():
-    remove_pipe()
-    raise Exception('show: terminal input is not supported')
+     remove_pipe(pipe_name)
+     raise Exception('show: terminal input is not supported')
   try:
      os.kill(grandparent, signal.SIGUSR1)
      pipe = open(pipe_name, "wb")
   except:
-     remove_pipe()
+     remove_pipe(pipe_name)
      raise Exception('show: cannot open named pipe')
   print >> pipe, sys.stdin.read()
   pipe.close()
 
 def main():
-   argv = sys.argv
-   if len(argv) < 2:
-      try_pipe = True
-   else:
-      try_pipe = False
-   parentpid = os.getppid()
-   global pipe_name
-   pipe_name = "/tmp/pipe_show_%s" % str(parentpid)
-   if os.path.exists(pipe_name):
-     if not remove_pipe():
-       print >> sys.stderr, ("show: pipe " + pipe_name + " cannot be not removed") 
-       return
-   termpy_file = "/tmp/show_gppid_%s"  % (parentpid)
-   global grandparent
+   try:
+     bash_grandparent = is_iam_a_child()
+   except Exception as exception:
+     print >> sys.stderr, exception
+     return
+   termpy_file = "/tmp/show_gppid_%s"  % bash_grandparent
    try:
      with open(termpy_file, "r") as f:
-        grandparent = int(f.readline())
+        termpy = int(f.readline())
    except:
-      print >> sys.stderr, ("show: lock file problem: " + termpy_file)
+      print >> sys.stderr, ("show: pid file problem: " + termpy_file)
       return
+   pipe_name = "/tmp/pipe_show_%s" % bash_grandparent
+   if os.path.exists(pipe_name):
+     if not remove_pipe(pipe_name):
+       print >> sys.stderr, ("show: pipe " + pipe_name + " cannot be not removed") 
+       return
    if not os.path.exists(pipe_name):
       try:
         os.mkfifo(pipe_name)
@@ -81,10 +84,10 @@ def main():
         print >> sys.stderr, "show: cannot create pipe"
         return
       try:
-        if not try_pipe:
-          process_file(argv[1])
+        if len(sys.argv) > 1:
+          process_file(sys.argv[1], pipe_name, termpy)
         else:
-          process_stdin()
+          process_stdin(pipe_name, termpy)
       except Exception as exception:
         print >> sys.stderr, exception
 
