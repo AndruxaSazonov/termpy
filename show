@@ -9,7 +9,8 @@ def remove_pipe(pipe_name):
     pass
 
 def is_iam_a_child():
-  forked_bash_pids = [fname[11:] for fname in os.listdir('/tmp') if fname[0:10] == "show_gppid"]
+  forked_bash_pids = [fname[fname.rfind('_')+1:] for fname in os.listdir('/tmp') \
+                                                 if fname.startswith("show_gppid")]
   pid = os.getpid()
   while pid != "1":
     pid = os.popen("ps -p %s -oppid=" % pid).read().strip()
