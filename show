@@ -6,7 +6,8 @@ def remove_pipe(pipe_name):
   try:
     os.unlink(pipe_name)
   except:
-    pass
+    return False
+  return True
 
 def is_iam_a_child():
   forked_bash_pids = [fname[fname.rfind('_')+1:] for fname in os.listdir('/tmp') \
@@ -73,8 +74,7 @@ def main():
    pipe_name = "/tmp/pipe_show_%s" % bash_grandparent
    if os.path.exists(pipe_name):
      if not remove_pipe(pipe_name):
-       print >> sys.stderr, ("show: pipe " + pipe_name + \
-       " cannot be not removed")
+       print >> sys.stderr, ("show: pipe " + pipe_name + " cannot be removed")
        return
    if not os.path.exists(pipe_name):
       try:
