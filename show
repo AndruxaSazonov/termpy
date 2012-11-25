@@ -39,7 +39,11 @@ def process_file(file_name, pipe_name, grandparent):
     fd = open(file_name, "rb")
   except:
     raise Exception('show: problem while opening file: ' + file_name)
-  process(pipe_name, grandparent, fd.read())
+  try: 
+    process(pipe_name, grandparent, fd.read())
+  except Exception as exception:
+    fd.close()
+    raise exception
   fd.close()
 
 def process_stdin(pipe_name, grandparent):
