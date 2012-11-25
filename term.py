@@ -82,12 +82,12 @@ class MainWindow(gtk.Window):
         try:
            pixbuf = self.loader.get_pixbuf()
         except:
-           return False
+           return
 
-        x, y, width, height = self.vte.get_allocation()
         lines = "".join(["\n" for x in xrange(0, self.vte.get_row_count() - 1)])
         self.vte.feed(lines)
 
+        _, _, width, height = self.vte.get_allocation()
         image_width, image_height = pixbuf.get_width(), pixbuf.get_height()
         if image_width > width:
            image_height = int(image_height * width / image_width)
@@ -97,16 +97,14 @@ class MainWindow(gtk.Window):
            image_height = height - self.vte.get_char_height() - 10
 
         self.pixbuf = pixbuf.scale_simple(image_width, image_height, gtk.gdk.INTERP_BILINEAR)
-        self.vte.window.draw_pixbuf(self.get_style().white_gc, \
-                                    self.pixbuf, \
-                                    0, 0, 0, 0, image_width, image_height)
-        return True
+        self.emit("expose-event", self.vte, self)
 
     def do_paint(self, widget, window):
        if self.pixbuf is not None:
+          x, y, _, _ = self.vte.get_allocation()
           self.vte.window.draw_pixbuf(self.get_style().white_gc, \
                                       self.pixbuf, \
-                                      0, 0, 0, 0, \
+                                      x, y, 0, 0, \
                                       self.pixbuf.get_width(), \
                                       self.pixbuf.get_height())
        return False

@@ -28,7 +28,6 @@ def process_file(file_name, pipe_name, grandparent):
   try:
     fd = open(file_name, "rb")
   except:
-    remove_pipe(pipe_name)
     raise Exception('show: problem while opening file: ' + file_name)
   try:
     os.kill(grandparent, signal.SIGUSR1)
@@ -36,8 +35,7 @@ def process_file(file_name, pipe_name, grandparent):
   except:
     remove_pipe(pipe_name)
     raise Exception('show: problem while opening pipe')
-  line = fd.read()
-  print >> pipe, line
+  print >> pipe, fd.read()
   fd.close()
   pipe.close()
 
@@ -47,7 +45,6 @@ def process_stdin(pipe_name, grandparent):
   if grandparent is None:
      raise Exception('show: grandparent process not found')
   if sys.stdin.isatty():
-     remove_pipe(pipe_name)
      raise Exception('show: terminal input is not supported')
   try:
      os.kill(grandparent, signal.SIGUSR1)
@@ -76,19 +73,18 @@ def main():
      if not remove_pipe(pipe_name):
        print >> sys.stderr, ("show: pipe " + pipe_name + " cannot be removed")
        return
-   if not os.path.exists(pipe_name):
-      try:
-        os.mkfifo(pipe_name)
-      except:
-        print >> sys.stderr, "show: cannot create pipe"
-        return
-      try:
-        if len(sys.argv) > 1:
-          process_file(sys.argv[1], pipe_name, termpy)
-        else:
-          process_stdin(pipe_name, termpy)
-      except Exception as exception:
-        print >> sys.stderr, exception
+   try:
+     os.mkfifo(pipe_name)
+   except:
+     print >> sys.stderr, "show: cannot create pipe"
+     return
+   try:
+     if len(sys.argv) > 1:
+       process_file(sys.argv[1], pipe_name, termpy)
+     else:
+       process_stdin(pipe_name, termpy)
+   except Exception as exception:
+     print >> sys.stderr, exception
 
 if __name__=='__main__':
   main()
