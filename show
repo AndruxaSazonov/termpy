@@ -20,40 +20,32 @@ def is_iam_a_child():
     raise Exception('show: no pid files or running not with term.py')
   return pid
 
-def process_file(file_name, pipe_name, grandparent):
+def process(pipe_name, grandparent, data):
   if pipe_name is None:
     raise Exception('show: no pipe name')
   if grandparent is None:
     raise Exception('show: granparent process not found')
-  try:
-    fd = open(file_name, "rb")
-  except:
-    raise Exception('show: problem while opening file: ' + file_name)
   try:
     os.kill(grandparent, signal.SIGUSR1)
     pipe = open(pipe_name, "wb")
   except:
     remove_pipe(pipe_name)
     raise Exception('show: problem while opening pipe')
-  print >> pipe, fd.read()
-  fd.close()
+  print >> pipe, data
   pipe.close()
 
+def process_file(file_name, pipe_name, grandparent):
+  try:
+    fd = open(file_name, "rb")
+  except:
+    raise Exception('show: problem while opening file: ' + file_name)
+  process(pipe_name, grandparent, fd.read())
+  fd.close()
+
 def process_stdin(pipe_name, grandparent):
-  if pipe_name is None:
-     raise Exception('show: no pipe name')
-  if grandparent is None:
-     raise Exception('show: grandparent process not found')
   if sys.stdin.isatty():
      raise Exception('show: terminal input is not supported')
-  try:
-     os.kill(grandparent, signal.SIGUSR1)
-     pipe = open(pipe_name, "wb")
-  except:
-     remove_pipe(pipe_name)
-     raise Exception('show: cannot open named pipe')
-  print >> pipe, sys.stdin.read()
-  pipe.close()
+  process(pipe_name, grandparent, sys.stdin.read())
 
 def main():
    try:
