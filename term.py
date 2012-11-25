@@ -61,28 +61,22 @@ class MainWindow(gtk.Window):
 
     def preprocess_show(self):
         if not os.path.exists(self.pipe_name):
-           return False
+           return
         try:
            pipe = open(self.pipe_name, "rb")
         except:
            self.remove_pipe()
-           return False
-        if not pipe:
-           self.remove_pipe()
-           return False
+           return
         for line in pipe:
            self.loader.write(line)
-        do = False
+        pipe.close()
+        self.remove_pipe()
         try:
-            do = self.loader.close()
+            if self.loader.close():
+               self.do_show()
         except:
              pass
-        if not pipe.closed: pipe.close()
-        self.remove_pipe()
-        if do:
-           self.do_show()
         self.loader = gtk.gdk.PixbufLoader()
-        return True
 
     def do_show(self):
         try:
