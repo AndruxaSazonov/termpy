@@ -4,9 +4,8 @@ termpy
 TermPy - simple terminal for *nix systems X Windows with ability to show
 pictures.
 
-TermPy is based on vte, gtk and python. It should work environments with
-GTK support and on POSIX-compliant systems (tested on Debian and Solaris).
-POSIX-compliance is needed only for executing ps command.
+TermPy is based on vte, gtk and python. It should work in environments with
+GTK support and POSIX-compliant ps command (tested on Debian and Solaris).
 
 Usage: launch ./term.py.
 
