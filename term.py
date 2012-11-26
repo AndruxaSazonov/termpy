@@ -97,9 +97,9 @@ class MainWindow(gtk.Window):
            image_height = height - self.vte.get_char_height() - 10
 
         self.pixbuf = pixbuf.scale_simple(image_width, image_height, gtk.gdk.INTERP_BILINEAR)
-        self.emit("expose-event", self.vte, self)
+        self.emit("expose-event", self, gtk.gdk.Event())
 
-    def do_paint(self, widget, window):
+    def do_paint(self, widget, event):
        if self.pixbuf is not None:
           x, y, _, _ = self.vte.get_allocation()
           self.vte.window.draw_pixbuf(self.get_style().white_gc, \

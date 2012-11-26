@@ -9,7 +9,8 @@ GTK support and POSIX-compliant ps command (tested on Debian and Solaris).
 
 Usage: launch ./term.py.
 
-Then try: './show your_image.jpg' or 'cat your_image.png | ./show'
+Then try: './show your_image.jpg' or 'cat your_image.png | ./show'.
+
 You can add show in your $PATH.
 
 Since VTE used, TermPy supports CTRL+INS, SHIFT+INS and copying by pressing
