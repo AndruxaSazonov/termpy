@@ -14,6 +14,7 @@ class MainWindow(gtk.Window):
         self.vte.connect("eof", self.command_executed)
         self.connect("key-press-event", self.clear)
         self.vte.connect_after("expose-event", self.do_paint)
+        self.vte.set_scrollback_lines(-1)
         self.add(self.vte)
         self.pid = self.vte.fork_command(command = 'bash')
         self.pipe_name = "/tmp/pipe_show_%s"  % str(self.pid)
