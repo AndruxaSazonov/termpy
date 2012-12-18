@@ -1,0 +1,51 @@
+'PlantUML notation, sequence diagram
+'plantuml.com or codeuml.com to view
+@startuml
+
+Actor User
+Participant term.py as TermPy
+
+title TermPy Interaction 
+
+User -> TermPy: launch
+Activate TermPy
+Create bash as Bash
+TermPy -> Bash: fork
+Activate Bash
+TermPy -> TermPy: create /tmp/bash_pid
+note left
+    Writes
+    term.py
+    pid into
+end note
+
+User -> Bash: commands
+Bash --> User: output
+
+User -> Bash: call ./show
+Create Show
+Bash -> Show: execute
+Activate Show
+Show -> Show: find grandparents
+Show -> Show: find /tmp/pid_file
+note right
+    Reads pid
+    of term.py
+end note
+Show ->> TermPy: SIGUSR1 by pid
+Show -> TermPy: send data
+note left
+    Via named pipe
+end note
+Deactivate Show
+TermPy --> User: draw picture
+
+User -> Bash: commands
+TermPy -> TermPy: clear
+Bash --> User: output
+
+User -> Bash: EOF or exit
+deactivate Bash
+deactivate TermPy
+
+@enduml
