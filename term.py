@@ -53,7 +53,6 @@ class MainWindow(gtk.Window):
              or ("Control_L" == keyname) or ("Control_D" == keyname):
              self.pixbuf = None
              self.vte.realize()
-             realized = True
        if "Return" == keyname:
           if not self.pixbuf is None:
              self.pixbuf = None
